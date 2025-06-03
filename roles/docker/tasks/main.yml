@@ -1,0 +1,56 @@
+- name: apt upadte
+  apt:
+    update_cache: yes
+  tags: [apt]
+
+- name: Install ca-certificates and curl
+  apt:
+    name: 
+      - ca-certificates
+      - curl
+    state: present
+  tags: [aptca]
+
+- name: create keyrings file
+  shell: install -m 0755 -d /etc/apt/keyrings
+  tags: [key]
+
+- name: get Docker GPG key
+  get_url:
+    url: https://download.docker.com/linux/ubuntu/gpg
+    dest: /etc/apt/keyrings/docker.asc
+    mode: '0644'
+  tags: [getkey]
+
+- name: Get Ubuntu codename
+  ansible.builtin.command: lsb_release -cs
+  register: ubuntu_codename
+  changed_when: false
+  tags: [code]
+
+- name: Add Docker APT repository
+  copy:
+    dest: /etc/apt/sources.list.d/docker.list
+    content: |
+      deb [arch=amd64 signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu {{ ubuntu_codename.stdout }} stable
+    mode: '0644'
+  tags: [code]
+
+
+- name: apt upadte-2
+  apt:
+    update_cache: yes
+  tags: [apt2]
+
+- name: Install Docker CE
+  apt:
+    name:
+      - docker-ce
+      - docker-ce-cli
+      - containerd.io
+      - docker-buildx-plugin
+      - docker-compose-plugin
+    state: present
+  tags: [dockerce]
+
+
